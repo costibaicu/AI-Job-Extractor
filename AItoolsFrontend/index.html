@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="ro" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job-Extractor.io | AI Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090a0f',
+                        cardBg: '#12131a',
+                        cardBorder: '#1e2029',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-darkBg text-zinc-100 min-h-screen font-sans antialiased">
+
+    <div id="alertBox" class="fixed top-5 right-5 z-50 hidden shadow-2xl"></div>
+
+    <header class="border-b border-cardBorder bg-cardBg/60 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center font-mono text-emerald-400 font-bold text-sm">
+                    JE
+                </div>
+                <span class="font-bold tracking-tight text-zinc-100 text-base">Job-Extractor<span class="text-emerald-400">.io</span></span>
+            </div>
+            
+            <div class="flex items-center space-x-2 bg-zinc-900/80 border border-cardBorder px-3 py-1.5 rounded-full">
+                <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-xs font-mono text-zinc-300">AI Engine Active</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 space-y-8">
+
+        <section class="bg-cardBg border border-cardBorder rounded-2xl p-6 shadow-xl">
+            <div class="mb-5">
+                <h2 class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-semibold mb-1">Extract Job</h2>
+                <p class="text-xs text-zinc-400">Enter the job URL for automated AI-powered extraction and analysis.</p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <div class="relative flex-1">
+                    <input type="url" id="jobUrl" placeholder="https://www.linkedin.com/jobs/view/..." 
+                        class="w-full bg-zinc-950/80 border border-cardBorder text-zinc-200 text-xs rounded-xl px-4 py-3.5 focus:outline-none focus:border-emerald-500/50 transition font-mono">
+                </div>
+                <button onclick="extractJob()" id="submitBtn" 
+                    class="bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold px-6 py-3.5 rounded-xl text-xs transition flex items-center justify-center space-x-2 cursor-pointer">
+                    <span>Process Job</span>
+                </button>
+            </div>
+
+            <div id="loading" class="hidden mt-4 flex items-center space-x-3 text-xs text-emerald-400 font-mono bg-emerald-950/20 border border-emerald-900/30 p-3 rounded-xl">
+                <span>Extraction and processing by AI in progress... Please wait.</span>
+            </div>
+        </section>
+
+        <div id="resultCard" class="hidden bg-cardBg border border-emerald-500/30 rounded-2xl p-6 shadow-2xl relative">
+            <div class="space-y-4">
+                <div>
+                    <h3 id="resTitle" class="text-base font-semibold text-zinc-100"></h3>
+                    <p id="resCompany" class="text-xs text-emerald-400 font-medium mt-0.5"></p>
+                </div>
+                <div class="flex flex-wrap gap-4 text-xs text-zinc-400 font-mono border-t border-cardBorder pt-4">
+                    <div>Experience: <span id="resExp" class="text-zinc-200 font-semibold"></span></div>
+                    <div>Location: <span id="resLoc" class="text-zinc-200 font-semibold"></span></div>
+                    <div>Type: <span id="resType" class="text-zinc-200 font-semibold"></span></div>
+                </div>
+                <div id="resTechs" class="pt-2"></div>
+            </div>
+        </div>
+
+        <section class="bg-cardBg border border-cardBorder rounded-2xl shadow-xl overflow-hidden">
+            <div class="p-6 border-b border-cardBorder flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-semibold mb-1">Record History</h2>
+                    <p class="text-xs text-zinc-400">Complete history of saved applications and positions in the local database.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <input type="text" id="searchInput" oninput="filterJobs()" placeholder="Search by role or company..." 
+                        class="bg-zinc-950/80 border border-cardBorder text-zinc-200 text-xs rounded-xl px-4 py-2.5 focus:outline-none focus:border-emerald-500/50 transition font-mono w-64">
+                    <button onclick="exportCsv()" class="bg-zinc-900 hover:bg-zinc-800 border border-cardBorder text-zinc-300 px-4 py-2.5 rounded-xl text-xs font-medium transition cursor-pointer">
+                        Export CSV
+                    </button>
+                    <button onclick="loadHistory()" class="bg-zinc-900 hover:bg-zinc-800 border border-cardBorder text-zinc-300 p-2.5 rounded-xl text-xs transition cursor-pointer">
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-cardBorder text-[11px] font-mono uppercase tracking-wider text-zinc-500 bg-zinc-950/40">
+                            <th class="py-3 px-5 font-medium">ID</th>
+                            <th class="py-3 px-5 font-medium">Role</th>
+                            <th class="py-3 px-5 font-medium">Company</th>
+                            <th class="py-3 px-5 font-medium">Experience</th>
+                            <th class="py-3 px-5 font-medium">Location</th>
+                            <th class="py-3 px-5 font-medium">Technologies</th>
+                            <th class="py-3 px-5 font-medium">Status</th>
+                            <th class="py-3 px-5 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTableBody" class="divide-y divide-cardBorder/50 text-xs">
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <div id="matchModal" class="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/80 backdrop-blur-md hidden p-4">
+        <div class="bg-cardBg border border-cardBorder rounded-2xl w-full max-w-2xl shadow-2xl overflow-hidden relative">
+
+            <div class="px-6 py-4 border-b border-cardBorder flex items-center justify-between bg-zinc-950/40">
+                <h3 class="text-xs font-mono uppercase tracking-wider font-semibold text-zinc-200">AI Assistant Hub</h3>
+                <button onclick="closeMatchModal()" class="text-zinc-500 hover:text-zinc-300 transition cursor-pointer">✕</button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <div id="modalFormContent" class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-2">Upload CV File (.pdf, .docx, .txt)</label>
+                        <input type="file" id="cvFileInput" accept=".pdf,.docx,.txt,.json" 
+                            class="block w-full text-xs text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-medium file:bg-zinc-900 file:text-emerald-400 hover:file:bg-zinc-800 cursor-pointer border border-cardBorder rounded-xl bg-zinc-950/40 transition"/>
+                    </div>
+
+                    <div class="text-center text-[10px] font-mono text-zinc-500 uppercase">or paste the text</div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-zinc-300 mb-2">Paste CV Raw Text</label>
+                        <textarea id="cvTextInput" rows="4" placeholder="Paste your CV details here..." 
+                            class="w-full bg-zinc-950/80 border border-cardBorder rounded-xl p-3 text-xs text-zinc-200 focus:outline-none focus:border-emerald-500/50 font-mono transition"></textarea>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="submitAiAction('match')" 
+                            class="flex-1 bg-zinc-900 hover:bg-zinc-800 border border-cardBorder text-zinc-200 font-medium py-3 rounded-xl text-xs transition cursor-pointer">
+                            Analyze Match Score
+                        </button>
+                        <button onclick="submitAiAction('cover-letter')" 
+                            class="flex-1 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-semibold py-3 rounded-xl text-xs transition cursor-pointer">
+                            Generate Cover Letter (.docx)
+                        </button>
+                    </div>
+                </div>
+
+                <div id="modalLoading" class="hidden py-12 text-center space-y-4">
+                    <p id="loadingText" class="text-xs font-mono text-emerald-400 tracking-wide"></p>
+                </div>
+
+                <div id="modalResultContent" class="hidden space-y-6">
+                    <div id="matchResultContainer" class="space-y-4">
+                        <div>
+                            <div class="flex justify-between text-xs font-mono mb-2">
+                                <span class="text-zinc-400">Compatibility Score</span>
+                                <span id="matchScoreText" class="text-emerald-400 font-bold"></span>
+                            </div>
+                            <div class="w-full bg-zinc-950 h-2.5 rounded-full overflow-hidden border border-cardBorder p-0.5">
+                                <div id="matchScoreBar" class="bg-gradient-to-r from-emerald-600 to-emerald-400 h-full rounded-full transition-all duration-500"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2">Detailed Analysis</h4>
+                            <p id="matchAnalysisText" class="text-xs text-zinc-300 leading-relaxed bg-zinc-950/60 border border-cardBorder p-4 rounded-xl font-mono whitespace-pre-wrap"></p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs font-mono uppercase tracking-wider text-zinc-400 mb-2">Missing Technologies</h4>
+                            <div id="matchMissingTechs" class="flex flex-wrap gap-1.5"></div>
+                        </div>
+                    </div>
+
+                    <div id="coverLetterResultContainer" class="hidden"></div>
+
+                    <div class="flex justify-end pt-4 border-t border-cardBorder">
+                        <button onclick="closeMatchModal()" class="bg-zinc-900 hover:bg-zinc-800 border border-cardBorder text-zinc-300 px-6 py-2.5 rounded-xl text-xs transition font-medium cursor-pointer">
+                            Close
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

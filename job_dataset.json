@@ -1,0 +1,27 @@
+[
+  {
+    "instruction": "Extract the required technologies, experience level, location, and work type from the given job posting.",
+    "input": "We are looking for a Junior Java Developer with solid experience in Spring Boot and PostgreSQL for our office in Bucharest. Hybrid schedule available.",
+    "output": "{\"technologies\": [\"Java\", \"Spring Boot\", \"PostgreSQL\"], \"experience_level\": \"Junior\", \"location\": \"Bucharest\", \"work_type\": \"Hybrid\"}"
+  },
+  {
+    "instruction": "Extract the required technologies, experience level, location, and work type from the given job posting.",
+    "input": "Seeking a Senior Backend Engineer proficient in Java, Microservices, and Docker. Remote work is an option anywhere in Romania.",
+    "output": "{\"technologies\": [\"Java\", \"Microservices\", \"Docker\"], \"experience_level\": \"Senior\", \"location\": \"Romania\", \"work_type\": \"Remote\"}"
+  },
+  {
+    "instruction": "Extract the required technologies, experience level, location, and work type from the given job posting.",
+    "input": "Compania noastră din Cluj-Napoca caută un Mid Java Developer. Stack-ul nostru include Spring Security, Hibernate și MySQL. Job on-site.",
+    "output": "{\"technologies\": [\"Java\", \"Spring Security\", \"Hibernate\", \"MySQL\"], \"experience_level\": \"Mid\", \"location\": \"Cluj-Napoca\", \"work_type\": \"On-site\"}"
+  },
+  {
+    "instruction": "Extract the required technologies, experience level, location, and work type from the given job posting.",
+    "input": "Haideti in echipa noastra din Timisoara! Avem nevoie de un Internship Java / Spring Boot pentru o perioada de 3 luni. Program flexibil, remote.",
+    "output": "{\"technologies\": [\"Java\", \"Spring Boot\"], \"experience_level\": \"Internship\", \"location\": \"Timisoara\", \"work_type\": \"Remote\"}"
+  },
+  {
+    "instruction": "Extract the required technologies, experience level, location, and work type from the given job posting.",
+    "input": "Looking for a Lead Software Architect with expertise in Java, AWS, Kubernetes, and system design. Location: Iasi, On-site.",
+    "output": "{\"technologies\": [\"Java\", \"AWS\", \"Kubernetes\", \"System Design\"], \"experience_level\": \"Lead\", \"location\": \"Iasi\", \"work_type\": \"On-site\"}"
+  }
+]
